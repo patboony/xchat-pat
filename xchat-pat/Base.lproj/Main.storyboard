@@ -301,7 +301,7 @@
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="yes"/>
                                         <connections>
-                                            <action selector="OnTextFieldChanged:" destination="vi5-Rz-6Tv" eventType="editingChanged" id="JvZ-fa-bda"/>
+                                            <action selector="onMessageTextFieldEdit:" destination="vi5-Rz-6Tv" eventType="editingChanged" id="5zh-S8-x8J"/>
                                         </connections>
                                     </textField>
                                     <button opaque="NO" alpha="0.0" contentMode="scaleToFill" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7Ap-aS-apK">

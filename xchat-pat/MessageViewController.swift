@@ -19,7 +19,6 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var sendButton: UIButton!
     
     @IBOutlet weak var messageTextFieldTrailingSpace: NSLayoutConstraint!
-    @IBOutlet weak var messageTextFieldSpaceToSendButton: NSLayoutConstraint!
     
     @IBOutlet weak var welcomeLabel: UILabel!
     @IBOutlet weak var subWelcomeLabel: UILabel!
@@ -48,19 +47,23 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
         self.view.endEditing(true)
     }
     
-    @IBAction func OnTextFieldChanged(sender: UITextField) {
+    @IBAction func onMessageTextFieldEdit(sender: UITextField) {
+        resizeTextField(sender)
+    }
+    
+    func resizeTextField(sender: UITextField){
         if sender.text != "" {
             self.messageTextFieldTrailingSpace.constant = 52
             UIView.animateWithDuration(0.2, animations: { () -> Void in
                 self.view.layoutIfNeeded()
                 }, completion: { (completed: Bool) -> Void in
-                self.sendButton.alpha = 1
+                    self.sendButton.alpha = 1
             })
             
         } else {
             self.sendButton.alpha = 0
             self.messageTextFieldTrailingSpace.constant = 8
-
+            
             UIView.animateWithDuration(0.2, animations: { () -> Void in
                 self.view.layoutIfNeeded()
                 }, completion: { (completed: Bool) -> Void in
@@ -68,7 +71,7 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
             })
         }
     }
-
+    
     // Set various parameters for messageTableView
     func initializeMessageTableView(){
         messageTableView.delegate = self
@@ -157,6 +160,7 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
         
         // Clear the text field
         messageTextField.text = ""
+        resizeTextField(messageTextField)
         
         message.saveInBackgroundWithBlock { (result: Bool, error: NSError?) -> Void in
             if error != nil {
