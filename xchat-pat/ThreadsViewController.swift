@@ -55,7 +55,7 @@ class ThreadsViewController: UIViewController, UITableViewDataSource, UITableVie
         query.orderByDescending("updatedAt")
         query.findObjectsInBackgroundWithBlock { (objects: [AnyObject]?, error: NSError?) -> Void in
             if objects != nil {
-                println(objects)
+                //println(objects)
                 self.threads = (objects as! [PFObject]?)!
                 self.threadsTableView.reloadData()
             } else {

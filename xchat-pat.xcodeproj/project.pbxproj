@@ -12,6 +12,7 @@
 		433B08BA1B0AE96300E4B64F /* EventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433B08B91B0AE96300E4B64F /* EventViewController.swift */; };
 		433B08BC1B0AEB4D00E4B64F /* EventViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433B08BB1B0AEB4D00E4B64F /* EventViewCell.swift */; };
 		433B08BE1B0AF3E800E4B64F /* NewEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433B08BD1B0AF3E800E4B64F /* NewEventViewController.swift */; };
+		433F4B141B13C79A006F339D /* WelcomeChatView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 433F4B131B13C79A006F339D /* WelcomeChatView.xib */; };
 		43AACC661B04519800E126F9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AACC651B04519800E126F9 /* AppDelegate.swift */; };
 		43AACC681B04519800E126F9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AACC671B04519800E126F9 /* ViewController.swift */; };
 		43AACC6B1B04519800E126F9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 43AACC691B04519800E126F9 /* Main.storyboard */; };
@@ -43,6 +44,7 @@
 		433B08B91B0AE96300E4B64F /* EventViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventViewController.swift; sourceTree = "<group>"; };
 		433B08BB1B0AEB4D00E4B64F /* EventViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventViewCell.swift; sourceTree = "<group>"; };
 		433B08BD1B0AF3E800E4B64F /* NewEventViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewEventViewController.swift; sourceTree = "<group>"; };
+		433F4B131B13C79A006F339D /* WelcomeChatView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = WelcomeChatView.xib; sourceTree = "<group>"; };
 		43AACC601B04519800E126F9 /* xchat-pat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "xchat-pat.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		43AACC641B04519800E126F9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		43AACC651B04519800E126F9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -136,6 +138,7 @@
 				433B08B91B0AE96300E4B64F /* EventViewController.swift */,
 				433B08BB1B0AEB4D00E4B64F /* EventViewCell.swift */,
 				433B08BD1B0AF3E800E4B64F /* NewEventViewController.swift */,
+				433F4B131B13C79A006F339D /* WelcomeChatView.xib */,
 			);
 			path = "xchat-pat";
 			sourceTree = "<group>";
@@ -258,6 +261,7 @@
 				43AACC6B1B04519800E126F9 /* Main.storyboard in Resources */,
 				43AACC701B04519800E126F9 /* LaunchScreen.xib in Resources */,
 				43AACC6D1B04519800E126F9 /* Images.xcassets in Resources */,
+				433F4B141B13C79A006F339D /* WelcomeChatView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

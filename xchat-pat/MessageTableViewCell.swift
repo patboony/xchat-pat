@@ -12,6 +12,7 @@ class MessageTableViewCell: UITableViewCell {
 
     @IBOutlet weak var authorLabel: UILabel!
     @IBOutlet weak var messageLabel: UILabel!
+    @IBOutlet weak var timestampLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -22,6 +23,11 @@ class MessageTableViewCell: UITableViewCell {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        messageLabel.preferredMaxLayoutWidth = messageLabel.frame.width
     }
 
 }
