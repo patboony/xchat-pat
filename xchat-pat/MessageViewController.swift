@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import Darwin
 
-class MessageViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class MessageViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, LoadMoreMessagesDelegate {
 
     @IBOutlet weak var messageTableView: UITableView!
     @IBOutlet weak var messageTextField: UITextField!
@@ -23,12 +24,22 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var welcomeLabel: UILabel!
     @IBOutlet weak var subWelcomeLabel: UILabel!
     
+    // This should be changed if we want to allow thread selection
+    var threadId: String = "AtsDDF0sUK"
     
     let animationTime: NSTimeInterval = 0.3
-    var threadId: String = "AtsDDF0sUK"
+
     var messages = [PFObject]()
+    var numOfMessagesToLoad: Int = 20
+    var numOfTotalMessages: Int?
+    
     var originalWidth: CGFloat?
     var originalHeight: CGFloat?
+    
+    var firstLoad: Bool = true
+    
+    // This block main thread
+    var query: PFQuery!
     
     // First login and then fetch messages
     func loginDummyUser() {
@@ -38,9 +49,34 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
             } else {
                 // Done
                 println(user)
+                
+                // Setting query blocks the main thread, so we only do this once
+                self.query = PFQuery(className: "message")
+                self.query.whereKey("threadId", equalTo: self.threadId)
+                self.query.orderByDescending("createdAt")
                 self.fetchMessages()
             }
         }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Do any additional setup after loading the view.
+        initializeMessageTableView()
+        
+        // Login and fetch messages
+        loginDummyUser()
+        
+        messageTextField.resignFirstResponder()
+        
+        // Hide Keyboard and stuff
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
+        
+        // Refetch messages every five seconds
+        var timer = NSTimer.scheduledTimerWithTimeInterval(15, target: self, selector: "fetchMessages", userInfo: nil, repeats: true)
+        
     }
     
     @IBAction func onTableViewTap(sender: UITapGestureRecognizer) {
@@ -51,7 +87,22 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
         resizeTextField(sender)
     }
     
+    func LoadMoreMessages(messageLoadMoreCell: MessageLoadMoreCell) {
+        // Do we need to impose the limit? Or it doesn't matter b/c parse
+        println("LOAD MORE MESSAGES")
+        numOfMessagesToLoad += 10
+        fetchMessages()
+    }
+    
     func resizeTextField(sender: UITextField){
+        
+        if !validateMessage(sender.text){
+            sendButton.enabled = false
+
+        } else {
+            sendButton.enabled = true
+        }
+        
         if sender.text != "" {
             self.messageTextFieldTrailingSpace.constant = 52
             UIView.animateWithDuration(0.2, animations: { () -> Void in
@@ -78,12 +129,14 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
         messageTableView.dataSource = self
         
         messageTableView.rowHeight = UITableViewAutomaticDimension
-        messageTableView.estimatedRowHeight = 80
+        messageTableView.estimatedRowHeight = 90
         
         messageTableView.tableFooterView = UIView(frame: CGRectZero)
         
         originalWidth = messageTableView.frame.width
         originalHeight = messageTableView.frame.height
+        
+        sendButton.setTitleColor(UIColor.grayColor(), forState: UIControlState.Disabled)
     }
     
     func insertWelcomeHeader(){
@@ -94,22 +147,34 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
         messageTableView.tableHeaderView = headerView
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-        initializeMessageTableView()
+    func tableView(tableView: UITableView, estimatedHeightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         
-        // Login and fetch messages
-        loginDummyUser()
-        
-        messageTextField.resignFirstResponder()
-        
-        // Hide Keyboard and stuff
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
-        
-        
+        if indexPath.row > 0 {
+            var messageForRow = messages[indexPath.row - 1]
+            var textContent = messageForRow["content"] as! String
+            var textInCell = NSMutableAttributedString(string: textContent)
+            var all = NSMakeRange(0, textInCell.length)
+            
+            textInCell.addAttribute(NSFontAttributeName, value: UIFont(name: "Helvetica Neue", size: 15)!, range: all)
+            
+            var theSize: CGSize = textInCell.boundingRectWithSize(CGSizeMake(200, CGFloat(MAXFLOAT)), options: NSStringDrawingOptions.UsesLineFragmentOrigin, context: nil).size
+            
+            if (theSize.height == 0) {
+                theSize.height = 80;
+            }
+            
+            return theSize.height;
+        } else {
+            if let x = numOfTotalMessages {
+                if x > numOfMessagesToLoad {
+                    return 25
+                } else {
+                    return 0
+                }
+            } else {
+                return 0
+            }
+        }
         
     }
     
@@ -125,7 +190,7 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
             
             self.view.layoutIfNeeded()
             }, completion: { (Bool) -> Void in
-                self.scrollToBottom()
+                //self.scrollToBottom()
         })
         
     }
@@ -138,7 +203,7 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
             
             self.view.layoutIfNeeded()
             }, completion: { (Bool) -> Void in
-                self.scrollToBottom()
+                //self.scrollToBottom()
         })
     }
 
@@ -151,45 +216,61 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
     
     @IBAction func sendMessageAction(sender: AnyObject) {
         
-        var message = PFObject(className: "message")
-        // Dummy authorId and threadId
-        message["authorUsername"] = PFUser.currentUser()?.username!
-        message["threadId"] = threadId
-        message["content"] = messageTextField.text
-        
-        
-        // Clear the text field
-        messageTextField.text = ""
-        resizeTextField(messageTextField)
-        
-        message.saveInBackgroundWithBlock { (result: Bool, error: NSError?) -> Void in
-            if error != nil {
-                // Print some kind of error to clients
-                println("unable to send this message")
-                println(error?.description)
-            } else {
-                // Succeed - reload
-                self.fetchMessages()
+        if validateMessage(messageTextField.text) {
+            var message = PFObject(className: "message")
+            // Dummy authorId and threadId
+            message["authorUsername"] = PFUser.currentUser()?.username!
+            message["threadId"] = threadId
+            message["content"] = messageTextField.text
+            
+            
+            // Clear the text field
+            messageTextField.text = ""
+            resizeTextField(messageTextField)
+            
+            message.saveInBackgroundWithBlock { (result: Bool, error: NSError?) -> Void in
+                if error != nil {
+                    // Print some kind of error to clients
+                    println("unable to send this message")
+                    println(error?.description)
+                } else {
+                    // Succeed - reload
+                    self.fetchMessages()
+                }
             }
         }
-
+    }
+    
+    func validateMessage(string: String) -> Bool {
+        let whitespaceSet = NSCharacterSet.whitespaceCharacterSet()
+        return string.stringByTrimmingCharactersInSet(whitespaceSet) != ""
     }
     
     func fetchMessages() {
-        var query = PFQuery(className: "message")
-        query.whereKey("threadId", equalTo: threadId)
-        query.orderByAscending("updatedAt")
-        query.limit = 20
+        
+        numOfTotalMessages = query.countObjects()
+        println(numOfTotalMessages)
+        println(numOfMessagesToLoad)
+        
+        query.limit = numOfMessagesToLoad
         
         query.findObjectsInBackgroundWithBlock { (objects: [AnyObject]?, error: NSError?) -> Void in
             if objects != nil {
                 
-                self.messages = (objects as! [PFObject]?)!
+                self.messages = ((objects as! [PFObject]?)!).reverse()
                 if self.messages.count != 0 {
                     // get rid of the welcome message
                     self.messageTableView.tableHeaderView = UIView(frame: CGRectZero)
                     self.messageTableView.reloadData()
-                    self.scrollToBottom()
+                    
+                    // Scroll to bottom
+                    if self.firstLoad {
+                        self.messageTableView.layoutIfNeeded()
+                        self.scrollToBottom()
+                        self.firstLoad = false
+                    }
+                    
+                    
                 } else {
                     self.insertWelcomeHeader()
                 }
@@ -201,13 +282,21 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
         }
     }
     
+    func delay(delay:Double, closure:()->()) {
+        dispatch_after(
+            dispatch_time(
+                DISPATCH_TIME_NOW,
+                Int64(delay * Double(NSEC_PER_SEC))
+            ),
+            dispatch_get_main_queue(), closure)
+    }
+    
     func scrollToBottom(){
         let bottomSection = messageTableView.numberOfSections() - 1
         if bottomSection >= 0 {
             let bottomRow = messageTableView.numberOfRowsInSection(bottomSection) - 1
-            if bottomRow >= 0 {
-                println(bottomRow)
-                println(bottomSection)
+            if bottomRow >= 1 {
+                
                 let lastIndexPath = NSIndexPath(forRow: bottomRow, inSection: bottomSection)
                 
                 messageTableView.layoutIfNeeded()
@@ -218,21 +307,34 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        var cell = tableView.dequeueReusableCellWithIdentifier("MessageTableViewCell", forIndexPath: indexPath) as! MessageTableViewCell
         
-        let messageForRow = messages[indexPath.row] as PFObject
-        cell.messageLabel.text = messageForRow["content"] as? String
-        cell.authorLabel.text = messageForRow["authorUsername"] as? String        
-        var dateFormatter = NSDateFormatter()
-        dateFormatter.dateFormat = "h:mm a"
-        cell.timestampLabel.text = dateFormatter.stringFromDate(messageForRow.createdAt!)
-
-        return cell
+        if indexPath.row != 0 {
+            var cell = tableView.dequeueReusableCellWithIdentifier("MessageTableViewCell", forIndexPath: indexPath) as! MessageTableViewCell
+            
+            let messageForRow = messages[indexPath.row-1] as PFObject
+            cell.messageLabel.text = messageForRow["content"] as? String
+            cell.authorLabel.text = messageForRow["authorUsername"] as? String
+            var dateFormatter = NSDateFormatter()
+            dateFormatter.dateFormat = "h:mm a"
+            cell.timestampLabel.text = dateFormatter.stringFromDate(messageForRow.createdAt!)
+            
+            return cell
+        } else {
+            var cell = tableView.dequeueReusableCellWithIdentifier("MessageLoadMoreCell") as! MessageLoadMoreCell
+            if numOfTotalMessages <= numOfMessagesToLoad {
+                return UITableViewCell(frame: CGRectZero)
+            } else {
+                cell.delegate = self
+                
+            }
+            return cell
+        }
+        
     }
 
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return messages.count
+        return messages.count + 1
     }
 
     /*

@@ -37,6 +37,7 @@ class EventViewController: UIViewController, UITableViewDataSource, UITableViewD
         let eventForRow = events[indexPath.row] as PFObject
         var dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "hh:mm a"
+        
         cell.startTimeLabel.text = dateFormatter.stringFromDate(eventForRow["start"] as! NSDate)
         cell.endTimeLabel.text = dateFormatter.stringFromDate(eventForRow["end"] as! NSDate)
         cell.eventNameLabel.text = eventForRow["eventName"] as? String
@@ -62,7 +63,7 @@ class EventViewController: UIViewController, UITableViewDataSource, UITableViewD
 
         var todayMidnight = NSDate(timeInterval: 0, sinceDate: NSDate())
         var tomorrowMidnight = NSDate(timeInterval: 86400, sinceDate: NSDate())
-        
+                
         println(todayMidnight)
         println(tomorrowMidnight)
         

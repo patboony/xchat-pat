@@ -14,6 +14,8 @@ class MessageTableViewCell: UITableViewCell {
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var timestampLabel: UILabel!
     
+    @IBOutlet weak var authorProfileImageView: UIImageView!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
