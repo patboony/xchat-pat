@@ -185,12 +185,13 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
         let newHeight = tableViewContainer.frame.height - kbSize!.height
         
         self.tableViewBottomLayoutConstraint.constant = kbSize!.height
+        println(kbSize!.height)
         
         UIView.animateWithDuration(0.2, animations: { () -> Void in
             
             self.view.layoutIfNeeded()
             }, completion: { (Bool) -> Void in
-                //self.scrollToBottom()
+                self.scrollToBottom()
         })
         
     }
@@ -203,7 +204,7 @@ class MessageViewController: UIViewController, UITableViewDataSource, UITableVie
             
             self.view.layoutIfNeeded()
             }, completion: { (Bool) -> Void in
-                //self.scrollToBottom()
+                self.scrollToBottom()
         })
     }
 
